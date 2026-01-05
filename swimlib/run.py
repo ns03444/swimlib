@@ -9,7 +9,8 @@ from swimlib.asdb import ASDBClient
 from swimlib.preval import get_target_software
 from swimlib.ssh_connect import SSHConnection, SSHAuthError, validate_remote_storage
 from swimlib.image_copy import sftp_copy_artifacts
-from swimlib.image_stage import stage_artifacts
+from swimlib.image_stage import stage_artifacts, get_target_volume
+from swimlib.image_upgrade import upgrade_to_volume
 
 
 asdb = ASDBClient()
@@ -79,6 +80,15 @@ def run_image_stage(ssh_client: paramiko.SSHClient, device: Dict) -> None:
         asdb.pre_validation_status(device, PreValStatus.FAIL)
         asdb.resolve_execution(f"error: Image staging failed: {e}")
 
+def run_image_upgrade(ssh_client: paramiko.SSHClient, device: Dict) -> None:
+    """Run the image upgrade process to reboot device to target volume."""
+    try:
+        target_volume = get_target_volume(ssh_client)
+        upgrade_to_volume(ssh_client, target_volume)
+    except Exception as e:
+        asdb.pre_validation_status(device, PreValStatus.FAIL)
+        asdb.resolve_execution(f"error: Image upgrade failed: {e}")
+
 def main():
     """Main workflow execution with execution_type control."""
     device = json.loads(os.getenv("SWIMLIB_DEVICE_JSON", "{}"))
@@ -95,13 +105,17 @@ def main():
     if execution_type == "dry_run":
         return
 
-    # Run image copy for image_copy or image_stage
-    if execution_type in ("image_copy", "image_stage"):
+    # Run image copy for image_copy, image_stage, or image_upgrade
+    if execution_type in ("image_copy", "image_stage", "image_upgrade"):
         run_image_copy(ssh_client, device)
 
-    # Run image stage only for image_stage
-    if execution_type == "image_stage":
+    # Run image stage for image_stage or image_upgrade
+    if execution_type in ("image_stage", "image_upgrade"):
         run_image_stage(ssh_client, device)
+
+    # Run image upgrade only for image_upgrade
+    if execution_type == "image_upgrade":
+        run_image_upgrade(ssh_client, device)
 
 if __name__ == "__main__":
     main()
