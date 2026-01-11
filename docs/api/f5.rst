@@ -1,0 +1,238 @@
+F5 BIG-IP Modules
+=================
+
+This section documents the F5 BIG-IP specific modules for device upgrades,
+including pre-validation, image transfer, staging, and upgrade operations.
+
+Workflow Orchestration
+----------------------
+
+.. automodule:: swimlib.f5.run
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Pre-Validation Enums
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: swimlib.f5.run.PreValStatus
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :no-index:
+
+   Enumeration of pre-validation status codes that map to ASDB status icons.
+
+Pre-Validation Module
+---------------------
+
+.. automodule:: swimlib.f5.preval
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Exceptions
+~~~~~~~~~~
+
+.. autoexception:: swimlib.f5.preval.SoftwareLookupException
+   :members:
+   :show-inheritance:
+   :no-index:
+
+   Raised when device model is not found in software_matrix or when required image files are missing.
+
+Functions
+~~~~~~~~~
+
+.. autofunction:: swimlib.f5.preval.get_target_software
+   :no-index:
+
+   Validates and retrieves target software configuration for a device model.
+
+   :Usage Example:
+
+   .. code-block:: python
+
+      from swimlib.f5.preval import get_target_software, SoftwareLookupException
+
+      try:
+          config = get_target_software("BIG-IP Virtual Edition")
+          print(f"Target version: {config['target_version']}")
+          print(f"Artifacts: {len(config['artifacts'])}")
+      except SoftwareLookupException as e:
+          print(f"Software lookup failed: {e}")
+
+Image Transfer
+--------------
+
+.. automodule:: swimlib.f5.actions.image_copy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Functions
+~~~~~~~~~
+
+.. autofunction:: swimlib.f5.actions.image_copy.compute_remote_md5
+   :no-index:
+
+   Computes MD5 checksum of a remote file for validation.
+
+.. autofunction:: swimlib.f5.actions.image_copy.sftp_copy_artifacts
+   :no-index:
+
+   Transfers software artifacts via SFTP with MD5 validation.
+
+   :Transfer Logic:
+
+   .. code-block:: text
+
+      For each artifact:
+        1. Check if file exists remotely
+        2. If exists, compute and verify MD5
+        3. Skip transfer if MD5 matches
+        4. Otherwise, transfer via SFTP
+        5. Validate post-transfer MD5
+        6. Assert match or raise error
+
+   :Usage Example:
+
+   .. code-block:: python
+
+      from swimlib.f5.actions.image_copy import sftp_copy_artifacts
+
+      artifacts = [
+          {
+              "local_path": "/images/BIGIP-21.0.0.iso",
+              "remote_path": "/shared/images/BIGIP-21.0.0.iso",
+              "md5": "a1b2c3d4e5f678901234567890123456"
+          }
+      ]
+
+      sftp_copy_artifacts(ssh_client, artifacts, "/shared/images")
+
+Image Staging
+-------------
+
+.. automodule:: swimlib.f5.actions.image_stage
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Functions
+~~~~~~~~~
+
+.. autofunction:: swimlib.f5.actions.image_stage.get_current_version
+   :no-index:
+
+   Retrieves currently running software version.
+
+.. autofunction:: swimlib.f5.actions.image_stage.get_target_volume
+   :no-index:
+
+   Determines inactive volume for software installation.
+
+.. autofunction:: swimlib.f5.actions.image_stage.stage_artifacts
+   :no-index:
+
+   Installs software artifacts to target volume.
+
+   :Staging Process:
+
+   .. code-block:: text
+
+      1. Check current version
+      2. Skip if already on target version
+      3. Identify inactive volume (e.g., HD1.2)
+      4. For each artifact:
+         a. Execute: tmsh install sys software image <path> volume <vol>
+         b. Wait for completion (recv_exit_status)
+      5. Software staged but not activated
+
+   :Usage Example:
+
+   .. code-block:: python
+
+      from swimlib.f5.actions.image_stage import stage_artifacts
+
+      artifacts = [
+          {"remote_path": "/shared/images/BIGIP-21.0.0.iso"}
+      ]
+
+      stage_artifacts(ssh_client, artifacts, target_version="21.0.0")
+      print("Software staged on inactive volume")
+
+Image Upgrade
+-------------
+
+.. automodule:: swimlib.f5.actions.image_upgrade
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Functions
+~~~~~~~~~
+
+.. autofunction:: swimlib.f5.actions.image_upgrade.upgrade_to_volume
+   :no-index:
+
+   Reboots device to activate staged software.
+
+   :Upgrade Process:
+
+   .. code-block:: text
+
+      1. Execute: tmsh reboot volume <target_volume>
+      2. Device reboots (SSH connection terminates)
+      3. Device boots from new volume
+      4. Verify post-reboot (external process)
+
+   :Usage Example:
+
+   .. code-block:: python
+
+      from swimlib.f5.actions.image_upgrade import upgrade_to_volume
+      from swimlib.f5.actions.image_stage import get_target_volume
+
+      # Get volume where software was staged
+      target_vol = get_target_volume(ssh_client)
+
+      # Reboot to activate (causes service interruption!)
+      upgrade_to_volume(ssh_client, target_vol)
+      print(f"Device rebooting to {target_vol}")
+
+   .. warning::
+
+      This operation causes immediate device reboot and service interruption.
+      Ensure proper change management procedures are followed.
+
+Complete Workflow Example
+--------------------------
+
+Full F5 BIG-IP upgrade workflow from pre-validation through reboot:
+
+.. code-block:: python
+
+   from swimlib.ssh_connect import SSHConnection, validate_remote_storage
+   from swimlib.f5.preval import get_target_software
+   from swimlib.f5.actions.image_copy import sftp_copy_artifacts
+   from swimlib.f5.actions.image_stage import stage_artifacts, get_target_volume
+   from swimlib.f5.actions.image_upgrade import upgrade_to_volume
+
+   # Phase 1: Pre-validation
+   config = get_target_software("BIG-IP Virtual Edition")
+
+   with SSHConnection("192.168.1.100", "admin", "password") as ssh:
+       validate_remote_storage(ssh, "/shared/images", min_gb=10)
+
+       # Phase 2: Image Copy
+       sftp_copy_artifacts(ssh, config["artifacts"], "/shared/images")
+
+       # Phase 3: Image Stage
+       stage_artifacts(ssh, config["artifacts"], config["target_version"])
+
+       # Phase 4: Image Upgrade
+       target_vol = get_target_volume(ssh)
+       upgrade_to_volume(ssh, target_vol)
+
+   print("Upgrade initiated - device rebooting")

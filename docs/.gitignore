@@ -1,0 +1,18 @@
+# Sphinx build outputs
+_build/
+_autosummary/
+
+# Generated files
+*.mo
+
+# Temporary files
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
