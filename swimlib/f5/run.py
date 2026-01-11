@@ -6,11 +6,11 @@ from typing import Dict
 
 import paramiko
 from swimlib.asdb import ASDBClient
-from swimlib.preval import get_target_software
+from swimlib.f5.preval import get_target_software
 from swimlib.ssh_connect import SSHConnection, SSHAuthError, validate_remote_storage
-from swimlib.image_copy import sftp_copy_artifacts
-from swimlib.image_stage import stage_artifacts, get_target_volume
-from swimlib.image_upgrade import upgrade_to_volume
+from swimlib.f5.actions.image_copy import sftp_copy_artifacts
+from swimlib.f5.actions.image_stage import stage_artifacts, get_target_volume
+from swimlib.f5.actions.image_upgrade import upgrade_to_volume
 
 
 asdb = ASDBClient()

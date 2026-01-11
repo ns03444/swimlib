@@ -1,20 +1,89 @@
-"""
-software_matrix.py
+"""F5 BIG-IP Software Configuration Matrix.
 
-A complete and consistent configuration matrix for F5 BIG-IP software images across various platforms.
-This version has been expanded with additional common platforms based on F5's iSeries and legacy hardware lines.
-The target versions have been updated to reflect current supported releases as of late 2025:
-- Virtual Edition and vCMP Guests: 21.0.0 (latest major release)
-- Hardware platforms (iSeries, etc.): 17.5.1.3-0.125.19 (long-term supported engineering hotfix branch)
+This module provides a comprehensive configuration matrix mapping F5 BIG-IP device models
+to their corresponding software images, versions, storage paths, and download locations.
 
-Artifacts include typical image types:
-- .iso for base installations (VE, vCMP)
-- .ALL-FSOS.qcow2.zip for virtualized hardware deployments
-- Hotfix .iso for engineering hotfixes
+The matrix supports multiple platform types including:
+- Virtual Edition (VE) platforms
+- vCMP Guest platforms
+- Hardware iSeries platforms (i2800, i5800, i7800, i10800, i15800)
+- Legacy hardware platforms (5250, 7200)
+- rSeries tenant platforms
 
-All MD5 values are realistic 32-character mock hex strings.
-Download URLs follow the observed internal Nexus repository pattern.
-Paths are consistent per version.
+Each device model configuration includes:
+- Target software version
+- Local and remote storage folder paths
+- Software artifact details (filenames, paths, MD5 checksums, download URLs)
+
+Module Attributes:
+    software_matrix (Dict[str, Dict[str, Any]]): Complete mapping of device models to
+        software configurations. Keys are device model names (e.g., "BIG-IP Virtual Edition"),
+        values are configuration dictionaries.
+
+Software Version Strategy:
+    - Virtual Edition and vCMP Guests: 21.0.0 (latest major release)
+    - Hardware platforms (iSeries): 17.5.1.3-0.125.19 (long-term supported EHF branch)
+    - rSeries platforms: 21.0.0
+
+Artifact Types:
+    - ``.iso`` - Base installation images for VE and vCMP platforms
+    - ``.ALL-FSOS.qcow2.zip`` - Virtualized hardware deployment images
+    - ``Hotfix-*.iso`` - Engineering hotfix (EHF) images
+
+Example:
+    Look up software configuration for a device model::
+
+        from swimlib.software_matrix import software_matrix
+
+        config = software_matrix["BIG-IP Virtual Edition"]
+        print(f"Target version: {config['target_version']}")
+        print(f"Artifacts: {len(config['artifacts'])}")
+
+        for artifact in config["artifacts"]:
+            print(f"  - {artifact['filename']} (MD5: {artifact['md5']})")
+
+    Validate artifact existence::
+
+        import os
+        from swimlib.software_matrix import software_matrix
+
+        config = software_matrix["BIG-IP i7800"]
+        for artifact in config["artifacts"]:
+            if os.path.exists(artifact["local_path"]):
+                print(f"✓ {artifact['filename']}")
+            else:
+                print(f"✗ {artifact['filename']} NOT FOUND")
+
+Configuration Structure:
+    Each device model entry contains::
+
+        {
+            "target_version": "21.0.0",
+            "local_folder": "/project-volume/images/21.0.0/",
+            "remote_folder": "/shared/images/",
+            "artifacts": [
+                {
+                    "filename": "BIGIP-21.0.0.iso",
+                    "local_path": "/project-volume/images/21.0.0/BIGIP-21.0.0.iso",
+                    "remote_path": "/shared/images/BIGIP-21.0.0.iso",
+                    "md5": "a1b2c3d4e5f678901234567890123456",
+                    "download_url": "https://nexus-dev.onef5serv.net/repository/..."
+                }
+            ]
+        }
+
+Note:
+    MD5 checksums in this matrix are mock values for demonstration purposes. In production,
+    these should be replaced with actual checksums from F5 Networks or verified downloads.
+
+    Download URLs point to an internal Nexus repository pattern and should be updated
+    to match your organization's artifact repository.
+
+See Also:
+    - :func:`swimlib.f5.preval.get_target_software` for retrieving and validating configurations
+    - :func:`swimlib.f5.actions.image_copy.sftp_copy_artifacts` for artifact transfer operations
+
+.. versionadded:: 0.1.0
 """
 
 software_matrix = {
