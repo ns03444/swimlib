@@ -34,17 +34,12 @@ extensions = [
     'sphinx.ext.napoleon',          # Support for Google & NumPy style docstrings
     'sphinx.ext.intersphinx',       # Link to other project's documentation
     'sphinx.ext.viewcode',          # Add links to highlighted source code
-    'sphinx.ext.todo',              # Support for TODO items
-    'sphinx.ext.coverage',          # Coverage checker for documentation
-    'sphinx.ext.ifconfig',          # Conditional content
     'sphinx.ext.githubpages',       # Publish HTML docs to GitHub Pages
-    'sphinx.ext.doctest',           # Test code snippets in documentation
-    'sphinx.ext.extlinks',          # Shortened external links
 
-    # Third-party extensions (uncomment after installing)
-    # 'sphinx_copybutton',          # Add copy button to code blocks
-    # 'sphinx_inline_tabs',         # Inline tabbed content
-    # 'myst_parser',                # Markdown support
+    # Third-party extensions for modern UX
+    'sphinx_copybutton',            # Add copy button to code blocks
+    'sphinx_inline_tabs',           # Inline tabbed content
+    'myst_parser',                  # Markdown support
 ]
 
 # Add any paths that contain templates here, relative to this directory
@@ -71,33 +66,50 @@ language = 'en'
 # The theme to use for HTML and HTML Help pages
 html_theme = 'furo'
 
-# Furo theme options
+# Furo theme options - Modern, sleek, minimal design
 html_theme_options = {
     # Sidebar configuration
     "sidebar_hide_name": False,
-
-    # Light mode colors
-    "light_css_variables": {
-        "color-brand-primary": "#2962FF",      # Blue accent
-        "color-brand-content": "#2962FF",
-        "font-stack": "Segoe UI, system-ui, -apple-system, sans-serif",
-        "font-stack--monospace": "Consolas, Monaco, 'Courier New', monospace",
-    },
-
-    # Dark mode colors
-    "dark_css_variables": {
-        "color-brand-primary": "#448AFF",      # Lighter blue for dark mode
-        "color-brand-content": "#448AFF",
-    },
-
-    # Top navigation
     "navigation_with_keys": True,
+
+    # Light mode - Clean, professional colors
+    "light_css_variables": {
+        "color-brand-primary": "#0066CC",           # Professional blue
+        "color-brand-content": "#0066CC",
+        "color-sidebar-background": "#f8f9fa",      # Subtle gray sidebar
+        "color-sidebar-background-border": "#e1e4e8",
+        "font-stack": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+        "font-stack--monospace": "'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace",
+        "font-size--normal": "16px",
+        "sidebar-item-spacing-vertical": "0.5rem",  # Compact sidebar
+        "toc-spacing-vertical": "0.5rem",
+    },
+
+    # Dark mode - Modern dark theme
+    "dark_css_variables": {
+        "color-brand-primary": "#4A9EFF",           # Lighter blue for dark
+        "color-brand-content": "#4A9EFF",
+        "color-sidebar-background": "#1a1d23",      # Deep dark sidebar
+        "color-sidebar-background-border": "#2d3139",
+        "color-background-primary": "#0d1117",      # GitHub-style dark
+    },
+
+    # Announcement banner (optional)
+    # "announcement": "📦 <b>v0.1.0</b> - Production-ready automation SDK",
+
+    # Top of page navigation
+    "top_of_page_button": "edit",
+
+    # Source code links
+    "source_repository": "https://github.com/nickspell/swimlib",
+    "source_branch": "master",
+    "source_directory": "docs/",
 
     # Footer
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/nickspell/swimlib",  # Update with actual repo
+            "url": "https://github.com/nickspell/swimlib",
             "html": """
                 <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
@@ -127,7 +139,7 @@ html_css_files = [
 html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer
-html_show_sphinx = True
+html_show_sphinx = False
 
 # Output file base name for HTML help builder
 htmlhelp_basename = 'swimlibdoc'
