@@ -69,12 +69,16 @@ class ASDBClient:
     The client maintains a device context dictionary that tracks execution metadata and
     automatically updates execution status upon initialization if an execution_log_id is present.
 
-    Attributes:
-        device (Dict[str, Any]): Device context dictionary containing execution metadata.
-        base_url (str): Base URL for ASDB API endpoint.
-        api_token (str): API authentication token.
-        mode (str): Operation mode - 'remote' or 'local'.
-        headers (Dict[str, str]): HTTP headers for API requests including authorization.
+    :ivar device: Device context dictionary containing execution metadata.
+    :vartype device: Dict[str, Any]
+    :ivar base_url: Base URL for ASDB API endpoint.
+    :vartype base_url: str
+    :ivar api_token: API authentication token.
+    :vartype api_token: str
+    :ivar mode: Operation mode - 'remote' or 'local'.
+    :vartype mode: str
+    :ivar headers: HTTP headers for API requests including authorization.
+    :vartype headers: Dict[str, str]
 
     Example:
         Initialize client and update execution status::
@@ -89,7 +93,7 @@ class ASDBClient:
             # Client automatically updates status to 'inprogress' on init
             client.send_log("Starting upgrade process", log_level="info")
 
-    Warning:
+    .. warning::
         Initialization will call ``sys.exit(1)`` if the automatic status update fails.
         This behavior should be refactored to raise exceptions instead.
 
@@ -136,7 +140,7 @@ class ASDBClient:
                 # Set environment: ASDB_BASE_URL, ASDB_TOKEN, ASDB_MODE
                 client = ASDBClient()
 
-        Note:
+        .. note::
             The automatic status update on initialization may not be desirable in all use cases.
             Consider refactoring to make this behavior explicit rather than implicit.
 
@@ -184,11 +188,11 @@ class ASDBClient:
                     payload={"execution_status": "completed"}
                 )
 
-        Note:
+        .. note::
             SSL verification is disabled (``verify=False``). This should be configurable
             in production environments that require certificate validation.
 
-        Warning:
+        .. warning::
             This is an internal method. Use the public API methods like
             ``update_execution_log_status()`` instead.
 
@@ -219,7 +223,7 @@ class ASDBClient:
                 client = ASDBClient()
                 response = client.update_execution_log_status("log-456", "completed")
 
-        See Also:
+        .. seealso::
             - :meth:`send_log` for appending log entries to the execution log
 
         .. versionadded:: 0.1.0
@@ -250,7 +254,7 @@ class ASDBClient:
                 client.send_log("Warning: High memory usage detected", log_level="warning")
                 client.send_log("Failed to connect to device", log_level="error")
 
-        Warning:
+        .. warning::
             Requires device context with execution_log_id to be set during initialization.
             Will log a warning and return None if execution_log_id is not available.
 
@@ -281,11 +285,11 @@ class ASDBClient:
                 client = ASDBClient(device={"device_name": "router-01"})
                 client.pre_validation_status("pass")
 
-        Warning:
+        .. warning::
             Requires device context with device_name to be set during initialization.
             Will log a warning and return None if device_name is not available.
 
-        See Also:
+        .. seealso::
             - :class:`swimlib.f5.run.PreValStatus` for common status values
 
         .. versionadded:: 0.1.0
@@ -324,10 +328,10 @@ class ASDBClient:
                 })
                 client.send_device_history(status="completed")
 
-        Note:
+        .. note::
             Automatically returns None for dry_run execution types without making an API call.
 
-        See Also:
+        .. seealso::
             - :meth:`build_history_metadata` for metadata structure details
 
         .. versionadded:: 0.1.0
@@ -374,13 +378,13 @@ class ASDBClient:
                 #     ...
                 # }
 
-        Note:
+        .. note::
             Some fields contain placeholder values (e.g., CR numbers "CR12345678", "CR12345")
             that should be replaced with actual change request identifiers in production.
 
             The current_version defaults to "17.X" and should be made configurable.
 
-        See Also:
+        .. seealso::
             - :meth:`send_device_history` which uses this method to build metadata
 
         .. versionadded:: 0.1.0
@@ -425,11 +429,11 @@ class ASDBClient:
                     # Exits with code 0 for dry_run, code 1 for production
                     client.resolve_execution(f"Validation failed: {e}")
 
-        Warning:
+        .. warning::
             This method always calls sys.exit() and never returns. Consider refactoring
             to raise exceptions instead of terminating the process.
 
-        See Also:
+        .. seealso::
             - :meth:`pass_device_execution` for successful completion handling
             - :meth:`fail_device_execution` for failure handling
 
@@ -462,12 +466,12 @@ class ASDBClient:
                     client.fail_device_execution("Device unreachable: connection timeout")
                 # Process terminates here - code below never executes
 
-        Warning:
+        .. warning::
             This method always calls sys.exit(1) and never returns. This violates the
             library design principle of exception-based error handling. Should be refactored
             to raise ASDBError exceptions instead, letting the caller decide whether to exit.
 
-        See Also:
+        .. seealso::
             - :meth:`pass_device_execution` for successful completion
             - :meth:`resolve_execution` for conditional resolution based on execution type
 
@@ -509,12 +513,12 @@ class ASDBClient:
                     status="validated"
                 )
 
-        Warning:
+        .. warning::
             This method always calls sys.exit(0) and never returns. This violates the
             library design principle of exception-based error handling. Should be refactored
             to return normally instead, letting the caller decide whether to exit.
 
-        See Also:
+        .. seealso::
             - :meth:`fail_device_execution` for failure handling
             - :meth:`resolve_execution` for conditional resolution based on execution type
 

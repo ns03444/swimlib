@@ -1,0 +1,77 @@
+# GitHub Actions Workflow for Sphinx Documentation
+# Deploys to GitHub Pages: https://<username>.github.io/swimlib
+
+name: Build and Deploy Documentation
+
+on:
+  push:
+    branches:
+      - master  # Deploy when pushing to master branch
+      - main    # Also support main branch
+  workflow_dispatch:  # Allow manual trigger
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Build documentation
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          pip install --upgrade pip
+          pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --with docs
+
+      - name: Build Sphinx documentation
+        run: |
+          poetry run sphinx-build -b html docs public
+          echo "Documentation built successfully"
+          ls -lah public/
+
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  # Deploy to GitHub Pages.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
