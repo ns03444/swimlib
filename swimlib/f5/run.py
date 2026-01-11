@@ -25,12 +25,12 @@ class PreValStatus(str, Enum):
     DISK_FULL = "disk_full"
 
 
-def validate_target_software(device: Dict) -> dict:
+def validate_target_software(device: Dict) -> None:
     """Validate and retrieve target software configuration for a device model."""
     try:
         device_model = device.get("device_type_model")
         artifacts = get_target_software(device_model)
-        return device.update(artifacts)
+        device.update(artifacts)
     except Exception as e:
         asdb.pre_validation_status(device, PreValStatus.IMAGE_MISSING)
         asdb.resolve_execution(f"error: Software lookup failed: {e}")
@@ -48,7 +48,7 @@ def validate_remote_connection(device: Dict, username: str, password: str) -> pa
         asdb.pre_validation_status(device, PreValStatus.FAIL)
         asdb.resolve_execution(f"error: SSH connection failed: {e}")
 
-def validate_remote_storage(ssh_client: paramiko.SSHClient, device: Dict) -> None:
+def check_remote_storage(ssh_client: paramiko.SSHClient, device: Dict) -> None:
     """Validate remote storage conditions on the device."""
     try:
         folder_path = device.get("remote_folder", "/shared/images")
@@ -99,7 +99,7 @@ def main():
     # Always run pre-validation checks
     validate_target_software(device)
     ssh_client = validate_remote_connection(device, username, password)
-    validate_remote_storage(ssh_client, device)
+    check_remote_storage(ssh_client, device)
 
     # Stop here if dry_run
     if execution_type == "dry_run":
