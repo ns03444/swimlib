@@ -22,8 +22,6 @@ copyright = f'{datetime.now().year}, Nick Spell'
 author = 'Nick Spell'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
-version = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -34,7 +32,8 @@ extensions = [
     'sphinx.ext.napoleon',          # Support for Google & NumPy style docstrings
     'sphinx.ext.intersphinx',       # Link to other project's documentation
     'sphinx.ext.viewcode',          # Add links to highlighted source code
-    'sphinx.ext.githubpages',       # Publish HTML docs to GitHub Pages
+    'sphinx.ext.githubpages',       # Publish HTML docs to GitHub Pages (creates .nojekyll)
+    'sphinx.ext.todo',              # Support for todo directives
 
     # Third-party extensions for modern UX
     'sphinx_copybutton',            # Add copy button to code blocks
