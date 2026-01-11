@@ -1,6 +1,6 @@
 """NetScaler Pre-Validation Module.
 
-This module provides pre-validation functionality for Citrix NetScaler devices,
+This module provides pre-validation functionality for Citrix NetScaler devices
 including software lookup, version validation, and artifact verification.
 
 Functions:
